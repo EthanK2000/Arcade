@@ -33,38 +33,6 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define C0 GPIO_PIN_8
-#define C0A GPIOC
-#define C1 GPIO_PIN_6
-#define C1A GPIOC
-#define C2 GPIO_PIN_5
-#define C2A GPIOC
-#define C3 GPIO_PIN_12
-#define C3A GPIOA
-#define C4 GPIO_PIN_11
-#define C4A GPIOA
-#define C5 GPIO_PIN_12
-#define C5A GPIOB
-#define C6 GPIO_PIN_11
-#define C6A GPIOB
-#define C7 GPIO_PIN_2
-#define C7A GPIOB
-#define R0 GPIO_PIN_1
-#define R0A GPIOB
-#define R1 GPIO_PIN_15
-#define R1A GPIOB
-#define R2 GPIO_PIN_14
-#define R2A GPIOB
-#define R3 GPIO_PIN_13
-#define R3A GPIOB
-#define R4 GPIO_PIN_4
-#define R4A GPIOC
-#define R5 GPIO_PIN_10
-#define R5A GPIOB
-#define R6 GPIO_PIN_8
-#define R6A GPIOA
-#define R7 GPIO_PIN_10
-#define R7A GPIOA
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -73,17 +41,18 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
-ADC_HandleTypeDef hadc2;
+ADC_HandleTypeDef hadc1;
 
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
-_Bool Up;
-_Bool Down;
-_Bool Left;
-_Bool Right;
-_Bool Middle;
+volatile _Bool Up;
+volatile _Bool Down;
+volatile _Bool Left;
+volatile _Bool Right;
+volatile _Bool Middle;
 uint32_t ms;
+uint8_t vel;
 _Bool ledMatrix[] = {
 		0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0, 0, 0, 0,
@@ -94,16 +63,22 @@ _Bool ledMatrix[] = {
 		0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0, 0, 0, 0,
 };
+volatile _Bool ms100;
+volatile _Bool varTim;
+volatile uint32_t mod;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
-static void MX_ADC2_Init(void);
 static void MX_USART2_UART_Init(void);
+static void MX_ADC1_Init(void);
 /* USER CODE BEGIN PFP */
-void displayMove(_Bool* matrix);
+void Configuration();
 void displayHome();
+void resetLED();
+void Maze();
+void Tennis();
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -118,16 +93,8 @@ void displayHome();
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-	uint16_t adcVal = 0;
 	_Bool config = 1;
 	ms = 0;
-	uint32_t now = 0;
-	uint8_t xpos = 4;
-	uint8_t ypos = 4;
-	uint8_t xpospre = 4;
-	uint8_t ypospre = 4;
-	_Bool gamePlay = 0;
-	uint8_t posStr[] = "$300_____\n";
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -148,169 +115,60 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_ADC2_Init();
   MX_USART2_UART_Init();
+  MX_ADC1_Init();
   /* USER CODE BEGIN 2 */
-  if (config) {
-	  HAL_Delay(100);
-	  now = ms;
- 	  HAL_GPIO_WritePin(R0A, R0, GPIO_PIN_SET);
-  	  HAL_GPIO_WritePin(R1A, R1, GPIO_PIN_SET);
-  	  HAL_GPIO_WritePin(R2A, R2, GPIO_PIN_SET);
-  	  HAL_GPIO_WritePin(R3A, R3, GPIO_PIN_SET);
-  	  HAL_GPIO_WritePin(R4A, R4, GPIO_PIN_SET);
-  	  HAL_GPIO_WritePin(R5A, R5, GPIO_PIN_SET);
-  	  HAL_GPIO_WritePin(R6A, R6, GPIO_PIN_SET);
-  	  HAL_GPIO_WritePin(R7A, R7, GPIO_PIN_SET);
+	if (config) {
+		HAL_Delay(100);
+		Configuration();
+	}
 
-  	  HAL_UART_Transmit(&huart2,(uint8_t*) "S21573751\n", 10, 100);
-
-  	  HAL_UART_Transmit(&huart2,(uint8_t*) "S10______\n", 10, 100);
- 	  HAL_GPIO_WritePin(C0A, C0, GPIO_PIN_SET);
-  	  while((ms-now)<1000){
-  	  }
-  	  HAL_GPIO_WritePin(C0A, C0, GPIO_PIN_RESET);
-
-  	  while((ms-now)<2000){
-  	  }
-
-  	  HAL_UART_Transmit(&huart2,(uint8_t*) "S11______\n", 10, 100);
-  	  HAL_GPIO_WritePin(C1A, C1, GPIO_PIN_SET);
-  	  while((ms-now)<3000){
-  	  }
-  	  HAL_GPIO_WritePin(C1A, C1, GPIO_PIN_RESET);
-
-  	  while((ms-now)<4000){
-  	  }
-
-  	  HAL_UART_Transmit(&huart2,(uint8_t*) "S12______\n", 10, 100);
- 	  HAL_GPIO_WritePin(C2A, C2, GPIO_PIN_SET);
-  	  while((ms-now)<5000){
-  	  }
-  	  HAL_GPIO_WritePin(C2A, C2, GPIO_PIN_RESET);
-
-  	  while((ms-now)<6000){
-  	  }
-
-  	  HAL_UART_Transmit(&huart2,(uint8_t*) "S13______\n", 10, 100);
-  	  HAL_GPIO_WritePin(C3A, C3, GPIO_PIN_SET);
-  	  while((ms-now)<7000){
-  	  }
-  	  HAL_GPIO_WritePin(C3A, C3, GPIO_PIN_RESET);
-
-  	  while((ms-now)<8000){
-  	  }
-
-  	  HAL_UART_Transmit(&huart2,(uint8_t*) "S14______\n", 10, 100);
-  	  HAL_GPIO_WritePin(C4A, C4, GPIO_PIN_SET);
-  	  while((ms-now)<9000){
-  	  }
-  	  HAL_GPIO_WritePin(C4A, C4, GPIO_PIN_RESET);
-
-  	  while((ms-now)<10000){
-  	  }
-
-  	  HAL_UART_Transmit(&huart2,(uint8_t*) "S15______\n", 10, 100);
-  	  HAL_GPIO_WritePin(C5A, C5, GPIO_PIN_SET);
-  	  while((ms-now)<11000){
-  	  }
-  	  HAL_GPIO_WritePin(C5A, C5, GPIO_PIN_RESET);
-
-  	  while((ms-now)<12000){
-  	  }
-
-  	  HAL_UART_Transmit(&huart2,(uint8_t*) "S16______\n", 10, 100);
-  	  HAL_GPIO_WritePin(C6A, C6, GPIO_PIN_SET);
-  	  while((ms-now)<13000){
-  	  }
-  	  HAL_GPIO_WritePin(C6A, C6, GPIO_PIN_RESET);
-
-  	  while((ms-now)<14000){
-  	  }
-
-  	  HAL_UART_Transmit(&huart2,(uint8_t*) "S17______\n", 10, 100);
-  	  HAL_GPIO_WritePin(C7A, C7, GPIO_PIN_SET);
-  	  while((ms-now)<15000){
-  	  }
-  	  HAL_GPIO_WritePin(C7A, C7, GPIO_PIN_RESET);
-
-  	  HAL_GPIO_WritePin(R0A, R0, GPIO_PIN_RESET);
-  	  HAL_GPIO_WritePin(R1A, R1, GPIO_PIN_RESET);
-  	  HAL_GPIO_WritePin(R2A, R2, GPIO_PIN_RESET);
-  	  HAL_GPIO_WritePin(R3A, R3, GPIO_PIN_RESET);
-  	  HAL_GPIO_WritePin(R4A, R4, GPIO_PIN_RESET);
-  	  HAL_GPIO_WritePin(R5A, R5, GPIO_PIN_RESET);
-  	  HAL_GPIO_WritePin(R6A, R6, GPIO_PIN_RESET);
-  	  HAL_GPIO_WritePin(R7A, R7, GPIO_PIN_RESET);
-
-  	  while((ms-now)<16000){
-  	  }
-
-  	  displayHome();
-  	  Up = 0;
-  	  Down = 0;
-  	  Left = 0;
-  	  Right = 0;
-  	  Middle = 0;
-    }
-    else {
-  	  displayHome();
-  	  Up = 0;
-  	  Down = 0;
-  	  Left = 0;
-  	  Right = 0;
-  	  Middle = 0;
-    }
+	Up = 0;
+	Down = 0;
+	Left = 0;
+	Right = 0;
+	Middle = 0;
+	resetLED();
+	displayHome();
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  if (Middle) {
-		  now = ms;
-		  if (gamePlay) {
-			  gamePlay = 0;
-			  displayHome();
-		  }
-		  else
-		  {
-			  gamePlay = 1;
-		  }
-		  Middle = 0;
-	  }
-	  if (gamePlay)
-	  {
-		  now = ms;
-		  displayMove(ledMatrix);
-		  posStr[2] = xpos+48;
-		  posStr[3] = ypos+48;
-		  HAL_UART_Transmit_IT(&huart2, posStr, 10);
-		  ypospre = ypos;
-		  xpospre = xpos;
-		  HAL_ADC_Start(&hadc2);
-		  if(HAL_ADC_PollForConversion(&hadc2, 100)==HAL_OK){
-			  adcVal = HAL_ADC_GetValue(&hadc2);
-			  ypos = 7-(adcVal/512)%8;
-			  HAL_ADC_Stop(&hadc2);
-		  }
-		  if(Left && xpos>0)
-		  {
-			  xpos -= 1;
-		  }
-		  else if(Right && xpos<7)
-		  {
-			  xpos += 1;
-		  }
-		  Left = 0;
-		  Right = 0;
-		  ledMatrix[xpospre*8+ypospre] = 0;
-		  ledMatrix[xpos*8+ypos] = 1;
-		  while(ms-now<100){
-		  }
-	  }
     /* USER CODE END WHILE */
-
+		if (Left) {
+			Up = 0;
+			Down = 0;
+			Left = 0;
+			Right = 0;
+			Middle = 0;
+			resetLED();
+			Maze();
+			Up = 0;
+			Down = 0;
+			Left = 0;
+			Right = 0;
+			Middle = 0;
+			resetLED();
+			displayHome();
+		}
+		else if (Middle) {
+			Up = 0;
+			Down = 0;
+			Left = 0;
+			Right = 0;
+			Middle = 0;
+			resetLED();
+			Tennis();
+			Up = 0;
+			Down = 0;
+			Left = 0;
+			Right = 0;
+			Middle = 0;
+			resetLED();
+			displayHome();
+		}
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
@@ -331,7 +189,9 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
   RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
-  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
+  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI_DIV2;
+  RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL2;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
     Error_Handler();
@@ -340,9 +200,9 @@ void SystemClock_Config(void)
   */
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
-  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSI;
+  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
+  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 
   if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
@@ -358,32 +218,32 @@ void SystemClock_Config(void)
 }
 
 /**
-  * @brief ADC2 Initialization Function
+  * @brief ADC1 Initialization Function
   * @param None
   * @retval None
   */
-static void MX_ADC2_Init(void)
+static void MX_ADC1_Init(void)
 {
 
-  /* USER CODE BEGIN ADC2_Init 0 */
+  /* USER CODE BEGIN ADC1_Init 0 */
 
-  /* USER CODE END ADC2_Init 0 */
+  /* USER CODE END ADC1_Init 0 */
 
   ADC_ChannelConfTypeDef sConfig = {0};
 
-  /* USER CODE BEGIN ADC2_Init 1 */
+  /* USER CODE BEGIN ADC1_Init 1 */
 
-  /* USER CODE END ADC2_Init 1 */
+  /* USER CODE END ADC1_Init 1 */
   /** Common config 
   */
-  hadc2.Instance = ADC2;
-  hadc2.Init.ScanConvMode = ADC_SCAN_DISABLE;
-  hadc2.Init.ContinuousConvMode = DISABLE;
-  hadc2.Init.DiscontinuousConvMode = DISABLE;
-  hadc2.Init.ExternalTrigConv = ADC_SOFTWARE_START;
-  hadc2.Init.DataAlign = ADC_DATAALIGN_RIGHT;
-  hadc2.Init.NbrOfConversion = 1;
-  if (HAL_ADC_Init(&hadc2) != HAL_OK)
+  hadc1.Instance = ADC1;
+  hadc1.Init.ScanConvMode = ADC_SCAN_DISABLE;
+  hadc1.Init.ContinuousConvMode = DISABLE;
+  hadc1.Init.DiscontinuousConvMode = DISABLE;
+  hadc1.Init.ExternalTrigConv = ADC_SOFTWARE_START;
+  hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
+  hadc1.Init.NbrOfConversion = 1;
+  if (HAL_ADC_Init(&hadc1) != HAL_OK)
   {
     Error_Handler();
   }
@@ -392,13 +252,13 @@ static void MX_ADC2_Init(void)
   sConfig.Channel = ADC_CHANNEL_13;
   sConfig.Rank = ADC_REGULAR_RANK_1;
   sConfig.SamplingTime = ADC_SAMPLETIME_1CYCLE_5;
-  if (HAL_ADC_ConfigChannel(&hadc2, &sConfig) != HAL_OK)
+  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
   {
     Error_Handler();
   }
-  /* USER CODE BEGIN ADC2_Init 2 */
+  /* USER CODE BEGIN ADC1_Init 2 */
 
-  /* USER CODE END ADC2_Init 2 */
+  /* USER CODE END ADC1_Init 2 */
 
 }
 
@@ -446,8 +306,13 @@ static void MX_GPIO_Init(void)
 
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOC_CLK_ENABLE();
+  __HAL_RCC_GPIOD_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOA, LD2_Pin|GPIO_PIN_8|GPIO_PIN_10|GPIO_PIN_11 
+                          |GPIO_PIN_12, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_4|GPIO_PIN_5|GPIO_PIN_6|GPIO_PIN_8, GPIO_PIN_RESET);
@@ -456,14 +321,20 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_10|GPIO_PIN_11 
                           |GPIO_PIN_12|GPIO_PIN_13|GPIO_PIN_14|GPIO_PIN_15, GPIO_PIN_RESET);
 
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8|GPIO_PIN_10|GPIO_PIN_11|GPIO_PIN_12, GPIO_PIN_RESET);
-
-  /*Configure GPIO pin : PC1 */
-  GPIO_InitStruct.Pin = GPIO_PIN_1;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
+  /*Configure GPIO pins : B1_Pin PC1 PC2 */
+  GPIO_InitStruct.Pin = B1_Pin|GPIO_PIN_1|GPIO_PIN_2;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : LD2_Pin PA8 PA10 PA11 
+                           PA12 */
+  GPIO_InitStruct.Pin = LD2_Pin|GPIO_PIN_8|GPIO_PIN_10|GPIO_PIN_11 
+                          |GPIO_PIN_12;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   /*Configure GPIO pins : PC4 PC5 PC6 PC8 */
   GPIO_InitStruct.Pin = GPIO_PIN_4|GPIO_PIN_5|GPIO_PIN_6|GPIO_PIN_8;
@@ -472,9 +343,9 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PB0 PB3 PB4 PB5 */
-  GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_3|GPIO_PIN_4|GPIO_PIN_5;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
+  /*Configure GPIO pins : PB0 PB4 PB5 */
+  GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_4|GPIO_PIN_5;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
@@ -487,22 +358,15 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PA8 PA10 PA11 PA12 */
-  GPIO_InitStruct.Pin = GPIO_PIN_8|GPIO_PIN_10|GPIO_PIN_11|GPIO_PIN_12;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
   /* EXTI interrupt init*/
   HAL_NVIC_SetPriority(EXTI0_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(EXTI0_IRQn);
 
-  HAL_NVIC_SetPriority(EXTI1_IRQn, 1, 0);
+  HAL_NVIC_SetPriority(EXTI1_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(EXTI1_IRQn);
 
-  HAL_NVIC_SetPriority(EXTI3_IRQn, 0, 0);
-  HAL_NVIC_EnableIRQ(EXTI3_IRQn);
+  HAL_NVIC_SetPriority(EXTI2_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI2_IRQn);
 
   HAL_NVIC_SetPriority(EXTI4_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(EXTI4_IRQn);
@@ -510,119 +374,498 @@ static void MX_GPIO_Init(void)
   HAL_NVIC_SetPriority(EXTI9_5_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
 
+  HAL_NVIC_SetPriority(EXTI15_10_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
+
 }
 
 /* USER CODE BEGIN 4 */
-void displayHome()
+void Configuration()
 {
-	HAL_GPIO_WritePin(R0A, R0, GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(R1A, R1, GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(R2A, R2, GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(R3A, R3, GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(R4A, R4, GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(R5A, R5, GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(R6A, R6, GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(R7A, R7, GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(C0A, C0, GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(C1A, C1, GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(C2A, C2, GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(C3A, C3, GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(C4A, C4, GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(C5A, C5, GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(C6A, C6, GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(C7A, C7, GPIO_PIN_RESET);
+	uint32_t now = 0;
+	uint8_t i = 0;
+	uint8_t posStr[] = "$1_______\n";
 
-	HAL_GPIO_WritePin(C0A, C0, GPIO_PIN_SET);
-	HAL_GPIO_WritePin(C7A, C7, GPIO_PIN_SET);
-	HAL_GPIO_WritePin(R0A, R0, GPIO_PIN_SET);
-	HAL_GPIO_WritePin(R7A, R7, GPIO_PIN_SET);
+	HAL_UART_Transmit(&huart2,(uint8_t*) "$21573751\n", 10, 100);
+	posStr[2] = '0';
+	HAL_UART_Transmit(&huart2, posStr, 10, 100);
+	now = ms;
+	for (i = 0; i<8; i++){
+		ledMatrix[8*i] = 1;
+	}
+	while((ms-now)<1000){
+	}
+	for (i = 0; i<8; i++){
+		ledMatrix[8*i] = 0;
+	}
+
+	posStr[2] = '1';
+	HAL_UART_Transmit(&huart2, posStr, 10, 100);
+	now = ms;
+	for (i = 0; i<8; i++){
+		ledMatrix[8*i+1] = 1;
+	}
+	while((ms-now)<1000){
+	}
+	for (i = 0; i<8; i++){
+		ledMatrix[8*i+1] = 0;
+	}
+
+	posStr[2] = '2';
+	HAL_UART_Transmit(&huart2,posStr, 10, 100);
+	now = ms;
+	for (i = 0; i<8; i++){
+		ledMatrix[8*i+2] = 1;
+	}
+	while((ms-now)<1000){
+	}
+	for (i = 0; i<8; i++){
+		ledMatrix[8*i+2] = 0;
+	}
+
+	posStr[2] = '3';
+	HAL_UART_Transmit(&huart2,posStr, 10, 100);
+	now = ms;
+	for (i = 0; i<8; i++){
+		ledMatrix[8*i+3] = 1;
+	}
+	while((ms-now)<1000){
+	}
+	for (i = 0; i<8; i++){
+		ledMatrix[8*i+3] = 0;
+	}
+
+	posStr[2] = '4';
+	HAL_UART_Transmit(&huart2, posStr, 10, 100);
+	now = ms;
+	for (i = 0; i<8; i++){
+		ledMatrix[8*i+4] = 1;
+	}
+	while((ms-now)<1000){
+	}
+	for (i = 0; i<8; i++){
+		ledMatrix[8*i+4] = 0;
+	}
+
+	posStr[2] = '5';
+	HAL_UART_Transmit(&huart2, posStr, 10, 100);
+	now = ms;
+	for (i = 0; i<8; i++){
+		ledMatrix[8*i+5] = 1;
+	}
+	while((ms-now)<1000){
+	}
+	for (i = 0; i<8; i++){
+		ledMatrix[8*i+5] = 0;
+	}
+
+	posStr[2] = '6';
+	HAL_UART_Transmit(&huart2, posStr, 10, 100);
+	now = ms;
+	for (i = 0; i<8; i++){
+		ledMatrix[8*i+6] = 1;
+	}
+	while((ms-now)<1000){
+	}
+	for (i = 0; i<8; i++){
+		ledMatrix[8*i+6] = 0;
+	}
+
+	posStr[2] = '7';
+	HAL_UART_Transmit(&huart2, posStr, 10, 100);
+	now = ms;
+	for (i = 0; i<8; i++){
+		ledMatrix[8*i+7] = 1;
+	}
+	while((ms-now)<1000){
+	}
+	for (i = 0; i<8; i++){
+		ledMatrix[8*i+7] = 0;
+	}
 
 	return;
 }
 
-void displayMove(_Bool* matrix)
+void displayHome()
 {
+	ledMatrix[0] = 1;
+	ledMatrix[7] = 1;
+	ledMatrix[56] = 1;
+	ledMatrix[63] = 1;
+
+	return;
+}
+
+void resetLED(){
 	uint8_t i = 0;
 	uint8_t j = 0;
 
-	HAL_GPIO_WritePin(R0A, R0, GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(R1A, R1, GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(R2A, R2, GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(R3A, R3, GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(R4A, R4, GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(R5A, R5, GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(R6A, R6, GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(R7A, R7, GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(C0A, C0, GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(C1A, C1, GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(C2A, C2, GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(C3A, C3, GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(C4A, C4, GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(C5A, C5, GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(C6A, C6, GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(C7A, C7, GPIO_PIN_RESET);
+	for (i = 0; i<8; i++){
+		for (j = 0; j<8; j++){
+			ledMatrix[i+8*j] = 0;
+		}
+	}
+}
 
-	for(i=0;i<8;i++){
-		for(j=0;j<8;j++){
-			if(matrix[8*i+j]==1)
+
+void Maze()
+{
+	uint8_t xpos = 0;
+	uint8_t ypos = 0;
+	uint8_t posStr[] = "$300_____\n";
+	_Bool gameEnd = 0;
+	uint8_t maze1[] = {
+			0, 0, 0, 0, 0, 0, 1, 0,
+			1, 1, 0, 1, 1, 0, 0, 0,
+			0, 0, 0, 0, 0, 0, 1, 0,
+			0, 1, 1, 1, 1, 1, 0, 1,
+			0, 0, 0, 0, 1, 0, 0, 0,
+			1, 1, 0, 1, 1, 0, 1, 0,
+			0, 0, 0, 1, 0, 0, 1, 0,
+			0, 1, 0, 0, 0, 1, 1, 0,
+	};
+	uint8_t i = 0;
+	uint8_t j = 0;
+	_Bool ledOn = 0;
+
+	for (i = 0; i<8; i++){
+		for (j = 0; j<8; j++){
+			ledMatrix[8*i+j] = maze1[8*i+j];
+		}
+	}
+	vel = 9;
+	mod = 0;
+	ms100 = 0;
+	varTim = 0;
+
+	while(!varTim){
+	}
+	while ((!Middle)&&(!gameEnd))
+	{
+		if(ms100)
+		{
+			ms100 = 0;
+			ledMatrix[63] = 1 - ledMatrix[63];
+		}
+		if(varTim)
+		{
+			ledOn = 1 - ledOn;
+			varTim = 0;
+			if(Left && xpos>0 && (ledMatrix[xpos-1 + 8*ypos] == 0))
 			{
-				switch (i)
-				{
-					case 0:
-						HAL_GPIO_WritePin(C0A, C0, GPIO_PIN_SET);
-						break;
-					case 1:
-						HAL_GPIO_WritePin(C1A, C1, GPIO_PIN_SET);
-						break;
-					case 2:
-						HAL_GPIO_WritePin(C2A, C2, GPIO_PIN_SET);
-						break;
-					case 3:
-						HAL_GPIO_WritePin(C3A, C3, GPIO_PIN_SET);
-						break;
-					case 4:
-						HAL_GPIO_WritePin(C4A, C4, GPIO_PIN_SET);
-						break;
-					case 5:
-						HAL_GPIO_WritePin(C5A, C5, GPIO_PIN_SET);
-						break;
-					case 6:
-						HAL_GPIO_WritePin(C6A, C6, GPIO_PIN_SET);
-						break;
-					case 7:
-						HAL_GPIO_WritePin(C7A, C7, GPIO_PIN_SET);
-						break;
-				}
-				switch (j)
-				{
-					case 0:
-						HAL_GPIO_WritePin(R0A, R0, GPIO_PIN_SET);
-						break;
-					case 1:
-						HAL_GPIO_WritePin(R1A, R1, GPIO_PIN_SET);
-						break;
-					case 2:
-						HAL_GPIO_WritePin(R2A, R2, GPIO_PIN_SET);
-						break;
-					case 3:
-						HAL_GPIO_WritePin(R3A, R3, GPIO_PIN_SET);
-						break;
-					case 4:
-						HAL_GPIO_WritePin(R4A, R4, GPIO_PIN_SET);
-						break;
-					case 5:
-						HAL_GPIO_WritePin(R5A, R5, GPIO_PIN_SET);
-						break;
-					case 6:
-						HAL_GPIO_WritePin(R6A, R6, GPIO_PIN_SET);
-						break;
-					case 7:
-						HAL_GPIO_WritePin(R7A, R7, GPIO_PIN_SET);
-						break;
-				}
+				ledMatrix[xpos+8*ypos] = 0;
+				xpos -= 1;
+			}
+			else if(Right && xpos<7  && (ledMatrix[xpos+1 + 8*ypos] == 0))
+			{
+				ledMatrix[xpos+8*ypos] = 0;
+				xpos += 1;
+			}
+			Left = 0;
+			Right = 0;
+			if(Up && ypos>0 && (ledMatrix[xpos + 8*(ypos-1)] == 0))
+			{
+				ledMatrix[xpos+8*ypos] = 0;
+				ypos -= 1;
+			}
+			else if(Down && ypos<7  && ((ledMatrix[xpos + 8*(ypos+1)] == 0)||((xpos == 7) && (ypos == 6))))
+			{
+				ledMatrix[xpos+8*ypos] = 0;
+				ypos += 1;
+			}
+			Up = 0;
+			Down = 0;
+			if (ledOn){
+				ledMatrix[xpos+8*ypos] = 1;
+			}
+			else {
+				ledMatrix[xpos+8*ypos] = 0;
+			}
+			posStr[2] = xpos+48;
+			posStr[3] = ypos+48;
+			if (ledMatrix[xpos+8*ypos]) {
+				posStr[4] = 49;
+			}
+			else {
+				posStr[4] = 48;
+			}
+			if (ledMatrix[63]) {
+				posStr[5] = 49;
+			}
+			else {
+				posStr[5] = 48;
+			}
+			HAL_UART_Transmit(&huart2, posStr, 10, 100);
+			if ((xpos == 7) && (ypos == 7))
+			{
+				gameEnd = 1;
 			}
 		}
 	}
+	return;
+}
+
+void Tennis()
+{
+	uint8_t xpos = 0;
+	uint8_t ypos = 4;
+	uint8_t xpospre = 0;
+	uint8_t ypospre = 0;
+	uint8_t posStr[] = "$200_____\n";
+	uint8_t ballX = 7;
+	uint8_t ballY = 4;
+	uint8_t ballXpre = 0;
+	uint8_t ballYpre = 0;
+	uint8_t dir = 0;
+	uint8_t hitCtr = 0;
+	uint16_t adcVal = 0;
+	_Bool gameEnd = 0;
+	vel = 1;
+	mod = 0;
+	varTim = 0;
+	while(!varTim){
+	}
+	varTim = 0;
+	ms100 = 0;
+	while(!ms100){
+	}
+	ms100 = 0;
+	ypospre = ypos;
+	HAL_ADC_Start(&hadc1);
+	if(HAL_ADC_PollForConversion(&hadc1, 100)==HAL_OK){
+		adcVal = HAL_ADC_GetValue(&hadc1);
+		ypos = 6-(adcVal/586)%7;
+		HAL_ADC_Stop(&hadc1);
+	}
+	ledMatrix[xpospre+8*ypospre] = 0;
+	ledMatrix[xpospre+8*(ypospre+1)] = 0;
+	ledMatrix[xpos+8*ypos] = 1;
+	ledMatrix[xpos+8*(ypos+1)] = 1;
+	posStr[2] = ballX+48;
+	posStr[3] = ballY+48;
+	posStr[4] = vel+48;
+	posStr[5] = dir+48;
+	posStr[6] = xpos+48;
+	posStr[7] = ypos+48;
+	HAL_UART_Transmit(&huart2, posStr, 10, 100);
+	while((!Middle)&&(!gameEnd)){
+		if(ms100){
+			ms100 = 0;
+			ypospre = ypos;
+			HAL_ADC_Start(&hadc1);
+			if(HAL_ADC_PollForConversion(&hadc1, 100)==HAL_OK){
+				adcVal = HAL_ADC_GetValue(&hadc1);
+				ypos = 6-(adcVal/586)%7;
+				HAL_ADC_Stop(&hadc1);
+			}
+			ledMatrix[xpospre+8*ypospre] = 0;
+			ledMatrix[xpospre+8*(ypospre+1)] = 0;
+			ledMatrix[xpos+8*ypos] = 1;
+			ledMatrix[xpos+8*(ypos+1)] = 1;
+			ledMatrix[ballX + 8*ballY] = 1;
+			posStr[2] = ballX+48;
+			posStr[3] = ballY+48;
+			posStr[4] = vel+48;
+			posStr[5] = dir+48;
+			posStr[6] = xpos+48;
+			posStr[7] = ypos+48;
+			HAL_UART_Transmit(&huart2, posStr, 10, 100);
+		}
+		if (varTim)
+		{
+			varTim = 0;
+			ballXpre = ballX;
+			ballYpre = ballY;
+			switch(dir) {
+			case 0:
+				if (ledMatrix[ballX-1 + 8*ballY])
+				{
+					if(ballY == ypos)
+					{
+						ballX++;
+						ballY--;
+						dir = 4;
+						hitCtr++;
+					}
+					else if(ballY == (ypos+1))
+					{
+						ballX++;
+						ballY++;
+						dir = 2;
+						hitCtr++;
+					}
+				}
+				else {
+					ballX--;
+				}
+				break;
+			case 1:
+				if ((ballX+1) > 7)
+				{
+					ballX--;
+					dir = 0;
+				}
+				else {
+					ballX++;
+				}
+				break;
+			case 2:
+				if (((ballX+1) > 7) && ((ballY+1) > 7))
+				{
+					ballX--;
+					ballY--;
+					dir = 3;
+				}
+				else if ((ballX+1) > 7)
+				{
+					ballX--;
+					ballY++;
+					dir = 5;
+				}
+				else if ((ballY+1) > 7)
+				{
+					ballX++;
+					ballY--;
+					dir = 4;
+				}
+				else {
+					ballX++;
+					ballY++;
+				}
+				break;
+			case 3:
+				if ((ballY-1) < 0)
+				{
+					if ((ballX-1) < 1)
+					{
+						if (ledMatrix[ballX-1 + 8*(ballY+1)]){
+							ballX++;
+							ballY++;
+							dir = 2;
+							hitCtr++;
+						}
+					}
+					else {
+						ballX--;
+						ballY++;
+						dir = 5;
+					}
+				}
+				else if (ledMatrix[ballX-1 + 8*(ballY-1)])
+				{
+					if((ballY-1) == ypos)
+					{
+						ballX++;
+						ballY--;
+						dir = 4;
+						hitCtr++;
+					}
+					else if((ballY-1) == (ypos+1))
+					{
+						ballX++;
+						ballY++;
+						dir = 2;
+						hitCtr++;
+					}
+				}
+				else{
+					ballX--;
+					ballY--;
+				}
+				break;
+			case 4:
+				if (((ballX+1) > 7) && ((ballY-1) < 0))
+				{
+					ballX--;
+					ballY++;
+					dir = 5;
+				}
+				else if ((ballX+1) > 7)
+				{
+					ballX--;
+					ballY--;
+					dir = 3;
+				}
+				else if ((ballY-1) < 0)
+				{
+					ballX++;
+					ballY++;
+					dir = 2;
+				}
+				else{
+					ballX++;
+					ballY--;
+				}
+				break;
+			case 5:
+				if ((ballY+1) > 7)
+				{
+					if ((ballX-1) < 1)
+					{
+						if (ledMatrix[ballX-1 + 8*(ballY-1)]){
+							ballX++;
+							ballY--;
+							dir = 4;
+							hitCtr++;
+						}
+					}
+					else {
+						ballX--;
+						ballY--;
+						dir = 3;
+					}
+				}
+				else if (ledMatrix[ballX-1 + 8*(ballY+1)])
+				{
+					if((ballY+1) == ypos)
+					{
+						ballX++;
+						ballY--;
+						dir = 4;
+						hitCtr++;
+					}
+					else if((ballY+1) == (ypos+1))
+					{
+						ballX++;
+						ballY++;
+						dir = 2;
+						hitCtr++;
+					}
+				}
+				else {
+					ballX--;
+					ballY++;
+				}
+				break;
+			}
+			ledMatrix[ballXpre + 8*ballYpre] = 0;
+			ledMatrix[ballX + 8*ballY] = 1;
+
+			if (ballX == 0)
+			{
+				while (!ms100){
+				}
+				posStr[2] = ballX+48;
+				posStr[3] = ballY+48;
+				posStr[4] = vel+48;
+				posStr[5] = dir+48;
+				posStr[6] = xpos+48;
+				posStr[7] = ypos+48;
+				HAL_UART_Transmit(&huart2, posStr, 10, 100);
+				while (!varTim){
+				}
+				varTim = 0;
+				gameEnd = 1;
+			}
+			else if((hitCtr==3)&&(vel<10))
+			{
+				vel++;
+				mod = ms%(750-vel*50);
+				hitCtr=0;
+			}
+		}
+	}
+	return;
 }
 /* USER CODE END 4 */
 

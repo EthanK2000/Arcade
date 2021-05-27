@@ -42,28 +42,114 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN PV */
-extern _Bool Up;
-extern _Bool Down;
-extern _Bool Left;
-extern _Bool Right;
-extern _Bool Middle;
+extern volatile _Bool Up;
+extern volatile _Bool Down;
+extern volatile _Bool Left;
+extern volatile _Bool Right;
+extern volatile _Bool Middle;
 extern uint32_t ms;
-uint32_t bounceDelay = 250;
+extern volatile uint32_t mod;
+extern _Bool ledMatrix[];
+extern volatile _Bool ms100;
+extern volatile _Bool varTim;
+extern uint8_t vel;
+uint32_t bounceDelay = 125;
 uint32_t bounceLast = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN PFP */
-
+void displayLED(uint8_t row);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+void displayLED(uint8_t row)
+{
+	uint8_t i = 0;
 
+	HAL_GPIO_WritePin(R0A, R0, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(R1A, R1, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(R2A, R2, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(R3A, R3, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(R4A, R4, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(R5A, R5, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(R6A, R6, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(R7A, R7, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(C0A, C0, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(C1A, C1, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(C2A, C2, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(C3A, C3, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(C4A, C4, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(C5A, C5, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(C6A, C6, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(C7A, C7, GPIO_PIN_RESET);
+
+	switch (row)
+	{
+	case 0:
+		HAL_GPIO_WritePin(R0A, R0, GPIO_PIN_SET);
+		break;
+	case 1:
+		HAL_GPIO_WritePin(R1A, R1, GPIO_PIN_SET);
+		break;
+	case 2:
+		HAL_GPIO_WritePin(R2A, R2, GPIO_PIN_SET);
+		break;
+	case 3:
+		HAL_GPIO_WritePin(R3A, R3, GPIO_PIN_SET);
+		break;
+	case 4:
+		HAL_GPIO_WritePin(R4A, R4, GPIO_PIN_SET);
+		break;
+	case 5:
+		HAL_GPIO_WritePin(R5A, R5, GPIO_PIN_SET);
+		break;
+	case 6:
+		HAL_GPIO_WritePin(R6A, R6, GPIO_PIN_SET);
+		break;
+	case 7:
+		HAL_GPIO_WritePin(R7A, R7, GPIO_PIN_SET);
+		break;
+	}
+	for (i = 0; i<8; i++)
+	{
+		if(ledMatrix[8*row+i]==1)
+		{
+			switch (i)
+			{
+			case 0:
+				HAL_GPIO_WritePin(C0A, C0, GPIO_PIN_SET);
+				break;
+			case 1:
+				HAL_GPIO_WritePin(C1A, C1, GPIO_PIN_SET);
+				break;
+			case 2:
+				HAL_GPIO_WritePin(C2A, C2, GPIO_PIN_SET);
+				break;
+			case 3:
+				HAL_GPIO_WritePin(C3A, C3, GPIO_PIN_SET);
+				break;
+			case 4:
+				HAL_GPIO_WritePin(C4A, C4, GPIO_PIN_SET);
+				break;
+			case 5:
+				HAL_GPIO_WritePin(C5A, C5, GPIO_PIN_SET);
+				break;
+			case 6:
+				HAL_GPIO_WritePin(C6A, C6, GPIO_PIN_SET);
+				break;
+			case 7:
+				HAL_GPIO_WritePin(C7A, C7, GPIO_PIN_SET);
+				break;
+			}
+		}
+	}
+}
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
-extern UART_HandleTypeDef huart2;
+
 /* USER CODE BEGIN EV */
 
 /* USER CODE END EV */
@@ -190,6 +276,13 @@ void SysTick_Handler(void)
 {
   /* USER CODE BEGIN SysTick_IRQn 0 */
 	ms++;
+	if((ms%100)==89){
+		ms100 = 1;
+	}
+	if((ms%(750-vel*50))==mod){
+		varTim = 1;
+	}
+	displayLED(ms%8);
   /* USER CODE END SysTick_IRQn 0 */
   HAL_IncTick();
   /* USER CODE BEGIN SysTick_IRQn 1 */
@@ -239,20 +332,20 @@ void EXTI1_IRQHandler(void)
 }
 
 /**
-  * @brief This function handles EXTI line3 interrupt.
+  * @brief This function handles EXTI line2 interrupt.
   */
-void EXTI3_IRQHandler(void)
+void EXTI2_IRQHandler(void)
 {
-  /* USER CODE BEGIN EXTI3_IRQn 0 */
+  /* USER CODE BEGIN EXTI2_IRQn 0 */
 	if ((!Up) && ((ms-bounceLast)>bounceDelay)) {
 		Up = 1;
 		bounceLast = ms;
 	}
-  /* USER CODE END EXTI3_IRQn 0 */
-  HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_3);
-  /* USER CODE BEGIN EXTI3_IRQn 1 */
+  /* USER CODE END EXTI2_IRQn 0 */
+  HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_2);
+  /* USER CODE BEGIN EXTI2_IRQn 1 */
 
-  /* USER CODE END EXTI3_IRQn 1 */
+  /* USER CODE END EXTI2_IRQn 1 */
 }
 
 /**
@@ -282,7 +375,6 @@ void EXTI9_5_IRQHandler(void)
 		Right = 1;
 		bounceLast = ms;
 	}
-
   /* USER CODE END EXTI9_5_IRQn 0 */
   HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_5);
   /* USER CODE BEGIN EXTI9_5_IRQn 1 */
@@ -291,17 +383,17 @@ void EXTI9_5_IRQHandler(void)
 }
 
 /**
-  * @brief This function handles USART2 global interrupt.
+  * @brief This function handles EXTI line[15:10] interrupts.
   */
-void USART2_IRQHandler(void)
+void EXTI15_10_IRQHandler(void)
 {
-  /* USER CODE BEGIN USART2_IRQn 0 */
+  /* USER CODE BEGIN EXTI15_10_IRQn 0 */
 
-  /* USER CODE END USART2_IRQn 0 */
-  HAL_UART_IRQHandler(&huart2);
-  /* USER CODE BEGIN USART2_IRQn 1 */
+  /* USER CODE END EXTI15_10_IRQn 0 */
+  HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_13);
+  /* USER CODE BEGIN EXTI15_10_IRQn 1 */
 
-  /* USER CODE END USART2_IRQn 1 */
+  /* USER CODE END EXTI15_10_IRQn 1 */
 }
 
 /* USER CODE BEGIN 1 */
