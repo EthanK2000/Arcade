@@ -106,6 +106,15 @@ void Error_Handler(void);
 #define R6A GPIOA
 #define R7 GPIO_PIN_10
 #define R7A GPIOA
+
+#define LED1 GPIO_PIN_8
+#define LED1A GPIOB
+#define LED2 GPIO_PIN_9
+#define LED2A GPIOB
+#define LED3 GPIO_PIN_6
+#define LED3A GPIOA
+#define LED4 GPIO_PIN_7
+#define LED4A GPIOA
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

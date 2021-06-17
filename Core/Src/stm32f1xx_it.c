@@ -53,7 +53,7 @@ extern _Bool ledMatrix[];
 extern volatile _Bool ms100;
 extern volatile _Bool varTim;
 extern uint8_t vel;
-uint32_t bounceDelay = 125;
+uint32_t bounceDelay = 250;
 uint32_t bounceLast = 0;
 /* USER CODE END PV */
 
@@ -149,7 +149,7 @@ void displayLED(uint8_t row)
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
-
+extern UART_HandleTypeDef huart3;
 /* USER CODE BEGIN EV */
 
 /* USER CODE END EV */
@@ -380,6 +380,20 @@ void EXTI9_5_IRQHandler(void)
   /* USER CODE BEGIN EXTI9_5_IRQn 1 */
 
   /* USER CODE END EXTI9_5_IRQn 1 */
+}
+
+/**
+  * @brief This function handles USART3 global interrupt.
+  */
+void USART3_IRQHandler(void)
+{
+  /* USER CODE BEGIN USART3_IRQn 0 */
+
+  /* USER CODE END USART3_IRQn 0 */
+  HAL_UART_IRQHandler(&huart3);
+  /* USER CODE BEGIN USART3_IRQn 1 */
+
+  /* USER CODE END USART3_IRQn 1 */
 }
 
 /**
